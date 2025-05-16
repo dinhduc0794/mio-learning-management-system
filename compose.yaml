@@ -1,6 +1,0 @@
-﻿services:
-  mio.lms.web:
-    image: mio.lms.web
-    build:
-      context: .
-      dockerfile: Mio.LMS.Web/Dockerfile
