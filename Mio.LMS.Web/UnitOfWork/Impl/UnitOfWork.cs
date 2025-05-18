@@ -15,7 +15,7 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(LMSDbContext context)
     {
         _context = context;
-        Users = new UserRepository(_context);   
+        // Users = new UserRepository(_context);   
         Courses = new CourseRepository(_context);
     }
 
