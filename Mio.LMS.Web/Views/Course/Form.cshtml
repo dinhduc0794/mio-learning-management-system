@@ -1,5 +1,7 @@
 @model Mio.LMS.Web.Models.ViewModels.CourseViewModel
 
+@using System.Text.Json
+
 @{
     var isEdit = Model.CourseId != 0;
     ViewData["Title"] = isEdit ? "Chỉnh sửa khóa học" : "Thêm khóa học";
@@ -22,13 +24,13 @@
         </div>
 
         <div class="page-content">
-            <div class="page-header">   
+            <div class="page-header">
                 <h1 style="font-weight: bold;">@ViewData["Title"]</h1>
             </div>
 
             <div class="row">
                 <div class="col-xs-12">
-                    <form asp-action="@action" method="post" id="debug-form">
+                    <form asp-action="@action" method="post" id="course-form">
                         @if (!ViewData.ModelState.IsValid)
                         {
                             <div class="alert alert-danger">
@@ -46,12 +48,12 @@
 
                         @if (isEdit)
                         {
-                            <input type="hidden" asp-for="CourseId"/>
+                            <input type="hidden" asp-for="CourseId" />
                         }
 
                         <div class="form-group">
                             <label asp-for="CourseName" class="control-label">Tên khóa học</label>
-                            <input asp-for="CourseName" class="form-control" required/>
+                            <input asp-for="CourseName" class="form-control" required />
                             <span asp-validation-for="CourseName" class="text-danger"></span>
                         </div>
 
@@ -65,15 +67,24 @@
                             <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.AllCategories">
                                 <option value="">-- Chọn danh mục --</option>
                             </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
                             <label asp-for="ImageUrl" class="control-label">Ảnh</label>
-                            <input asp-for="ImageUrl" class="form-control"/>
+                            <input asp-for="ImageUrl" class="form-control" />
                         </div>
 
-                        <div class="form-group" style="margin-top: 24px;">
-                            <button type="submit" class="btn btn-primary">
+                        <div class="form-group">
+                            <label>Phần học (Sections)</label>
+                            <div id="sections-container">
+                                <!-- Phần sections sẽ được render tại đây -->
+                            </div>
+                            <button type="button" class="btn btn-primary"style="margin-left: 32px" id="add-section">+ Thêm phần</button>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary" style="margin-right: 12px">
                                 @(isEdit ? "Lưu thay đổi" : "Thêm khóa học")
                             </button>
                             <a asp-action="Index" class="btn btn-warning">Quay lại</a>
@@ -84,3 +95,118 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function () {
+            let sectionIndex = @Model.Sections?.Count ?? 0;
+            const initialSections = @Html.Raw(JsonSerializer.Serialize(Model.Sections));
+
+            function createLessonForm(sectionIdx, lessonIdx, lesson = {}) {
+                return `
+                    <div class="lesson-item card mt-2 p-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Bài học ${lessonIdx + 1}: ${lesson.LessonName || ''}</strong>
+                            <button type="button" class="btn btn-danger btn-sm remove-lesson">Xóa bài học</button>
+                        </div>
+                        <input type="hidden" name="Sections[${sectionIdx}].Lessons[${lessonIdx}].LessonId" value="${lesson.LessonId || 0}" />
+                        <input type="hidden" name="Sections[${sectionIdx}].Lessons[${lessonIdx}].Order" value="${lesson.Order || lessonIdx + 1}" />
+                        <div class="form-group mt-2">
+                            <label>Tên bài học</label>
+                            <input name="Sections[${sectionIdx}].Lessons[${lessonIdx}].LessonName" class="form-control" value="${lesson.LessonName || ''}" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Nội dung</label>
+                            <textarea name="Sections[${sectionIdx}].Lessons[${lessonIdx}].Content" class="form-control">${lesson.Content || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Video URL</label>
+                            <input name="Sections[${sectionIdx}].Lessons[${lessonIdx}].VideoUrl" class="form-control" value="${lesson.VideoUrl || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label>Tài liệu URL</label>
+                            <input name="Sections[${sectionIdx}].Lessons[${lessonIdx}].DocumentUrl" class="form-control" value="${lesson.DocumentUrl || ''}" />
+                        </div>
+                    </div>`;
+            }
+
+            function createSectionForm(section, i) {
+                let lessonHtml = "";
+                const lessons = section.Lessons || [];
+                for (let j = 0; j < lessons.length; j++) {
+                    lessonHtml += createLessonForm(i, j, lessons[j]);
+                }
+
+                return `
+                    <div class="section-item card mt-3 p-3 border-primary" data-section-index="${i}">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between">
+                            <strong>Phần ${i + 1}: ${section.SectionName || ''}</strong>
+                            <button type="button" class="btn btn-light btn-sm remove-section">Xóa phần</button>
+                        </div>
+                        <input type="hidden" name="Sections[${i}].SectionId" value="${section.SectionId || 0}" />
+                        <input type="hidden" name="Sections[${i}].Order" value="${section.Order || i + 1}" />
+                        <div class="form-group mt-2">
+                            <label>Tên phần</label>
+                            <input name="Sections[${i}].SectionName" class="form-control" value="${section.SectionName || ''}" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả</label>
+                            <textarea name="Sections[${i}].Description" class="form-control">${section.Description || ''}</textarea>
+                        </div>
+                        <div class="lessons-container" data-section-index="${i}">
+                            ${lessonHtml}
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm add-lesson mt-2" data-section-index="${i}">+ Thêm bài học</button>
+                    </div>`;
+            }
+
+            initialSections.forEach((s, i) => {
+                $("#sections-container").append(createSectionForm(s, i));
+            });
+
+            $("#add-section").on("click", function () {
+                const section = { Lessons: [] };
+                const html = createSectionForm(section, sectionIndex);
+                $("#sections-container").append(html);
+                sectionIndex++;
+            });
+
+            $(document).on("click", ".add-lesson", function () {
+                const sectionIdx = $(this).data("section-index");
+                const container = $(`.lessons-container[data-section-index='${sectionIdx}']`);
+                const lessonIdx = container.find(".lesson-item").length;
+                container.append(createLessonForm(sectionIdx, lessonIdx));
+            });
+
+            $(document).on("click", ".remove-section", function () {
+                $(this).closest(".section-item").remove();
+            });
+
+            $(document).on("click", ".remove-lesson", function () {
+                $(this).closest(".lesson-item").remove();
+            });
+
+            // Handle AJAX form submission
+            $('#course-form').on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const actionUrl = form.attr('action');
+                const formData = form.serialize();
+
+                $.post(actionUrl, formData)
+                    .done(function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.href = '/Course';
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra.');
+                        }
+                    })
+                    .fail(function () {
+                        alert('Lỗi kết nối đến máy chủ.');
+                    });
+            });
+        });
+    </script>
+}

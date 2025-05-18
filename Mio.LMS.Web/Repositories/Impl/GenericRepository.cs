@@ -7,6 +7,7 @@ namespace Mio.LMS.Web.Repositories.Impl;
 public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
     protected readonly LMSDbContext _context;
+
     public GenericRepository(LMSDbContext context)
     {
         _context = context;
@@ -24,27 +25,64 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
     {
-        return await _context.Set<T>().Where(expression).ToListAsync();
+        var query = _context.Set<T>().AsQueryable();
+        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
+        {
+            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
+        }
+        return await query.Where(expression).ToListAsync();
     }
 
     public async Task<IEnumerable<T>> GetAllAsync()
     {
-        return await _context.Set<T>().ToListAsync();
+        var query = _context.Set<T>().AsQueryable();
+        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
+        {
+            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
+        }
+        return await query.ToListAsync();
     }
 
     public async Task<T?> GetByIdAsync(int id)
     {
-        return await _context.Set<T>().FindAsync(id);
+        var query = _context.Set<T>().AsQueryable();
+        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
+        {
+            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
+        }
+        return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
     }
 
     public void Remove(T entity)
     {
-        _context.Set<T>().Remove(entity);
+        if (entity is BaseModel baseModel)
+        {
+            baseModel.IsDeleted = true;
+            baseModel.IsActive = false;
+            baseModel.UpdatedAt = DateTime.Now;
+            _context.Set<T>().Update(entity);
+        }
+        else
+        {
+            _context.Set<T>().Remove(entity);
+        }
     }
 
     public void RemoveRange(IEnumerable<T> entities)
     {
-        _context.Set<T>().RemoveRange(entities);
+        foreach (var entity in entities)
+        {
+            if (entity is BaseModel baseModel)
+            {
+                baseModel.IsDeleted = true;
+                baseModel.IsActive = false;
+                baseModel.UpdatedAt = DateTime.Now;
+                _context.Set<T>().Update(entity);
+            }
+            else
+            {
+                _context.Set<T>().Remove(entity);
+            }
+        }
     }
 }
-

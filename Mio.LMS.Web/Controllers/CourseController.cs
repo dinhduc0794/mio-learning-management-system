@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Mio.LMS.Web.Models;
 using Mio.LMS.Web.Models.ViewModels;
 using Mio.LMS.Web.Services;
+using System.Threading.Tasks;
 
 namespace Mio.LMS.Web.Controllers;
 
@@ -19,7 +20,6 @@ public class CourseController : Controller
 
     public async Task<IActionResult> Index(int? categoryId)
     {
-        // Gọi service với categoryId để lọc ngay từ tầng dữ liệu
         var result = await _courseService.GetAllCoursesAsync(categoryId);
         if (!result.IsSuccess)
         {
@@ -57,19 +57,27 @@ public class CourseController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.AllCategories = await GetCategorySelectList();
-            return View("Form", model);
+            var errorDetails = ModelState
+                .Select(kvp => new {
+                    Field = kvp.Key,
+                    Errors = kvp.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                }).Where(e => e.Errors.Any())
+                .ToList();
+
+            return Json(new {
+                success = false,
+                message = "Dữ liệu không hợp lệ",
+                errors = errorDetails
+            });
         }
 
         var result = await _courseService.AddCourseAsync(model);
         if (!result.IsSuccess)
         {
-            ViewBag.AllCategories = await GetCategorySelectList();
-            ModelState.AddModelError("", result.Message);
-            return View("Form", model);
+            return Json(new { success = false, message = result.Message });
         }
 
-        return RedirectToAction("Index");
+        return Json(new { success = true, message = result.Message });
     }
 
     [HttpGet]
@@ -88,19 +96,27 @@ public class CourseController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.AllCategories = await GetCategorySelectList();
-            return View("Form", model);
+            var errorDetails = ModelState
+                .Select(kvp => new {
+                    Field = kvp.Key,
+                    Errors = kvp.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                }).Where(e => e.Errors.Any())
+                .ToList();
+
+            return Json(new {
+                success = false,
+                message = "Dữ liệu không hợp lệ",
+                errors = errorDetails
+            });
         }
 
         var result = await _courseService.UpdateCourseAsync(model);
         if (!result.IsSuccess)
         {
-            ViewBag.AllCategories = await GetCategorySelectList();
-            ModelState.AddModelError("", result.Message);
-            return View("Form", model);
+            return Json(new { success = false, message = result.Message });
         }
 
-        return RedirectToAction("Index");
+        return Json(new { success = true, message = result.Message });
     }
 
     [HttpPost]

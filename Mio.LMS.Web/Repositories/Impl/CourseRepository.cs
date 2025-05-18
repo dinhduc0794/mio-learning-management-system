@@ -14,4 +14,12 @@ public class CourseRepository : GenericRepository<Course>, ICourseRepository
             .Where(c => !c.IsDeleted)
             .ToListAsync();
     }
+    
+    public async Task<Course> GetByIdWithSectionsAndLessonsAsync(int id)
+    {
+        return await _context.Courses
+            .Include(c => c.Sections)
+            .ThenInclude(s => s.Lessons)
+            .FirstOrDefaultAsync(c => c.CourseId == id);
+    }
 }

@@ -60,6 +60,7 @@
                         <th class="text-center">Mô tả</th>
                         <th class="text-center">Danh mục</th>
                         <th class="text-center">Ngày tạo</th>
+                        <th class="text-center">Ngày sửa</th>
                         <th class="text-center">Thao tác</th>
                     </tr>
                     </thead>
@@ -141,9 +142,16 @@
                     {
                         data: "createdAt",
                         render: function (data) {
-                            return data ? moment(data).format("DD/MM/YYYY HH:mm") : "N/A";
+                            return data ? moment.tz(data, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm") : "N/A";
                         },
                         className: "text-center"
+                    },
+                    {
+                        "data": "updatedAt",
+                        render: function (data) {
+                            return data ? moment.tz(data, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm") : "N/A";
+                        },
+                        "className": "center"
                     },
                     {
                         data: "courseId",

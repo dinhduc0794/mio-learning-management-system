@@ -1,6 +1,8 @@
 using Mio.LMS.Web.Models;
 using Mio.LMS.Web.Models.ViewModels;
 using Mio.LMS.Web.UnitOfWorks;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Mio.LMS.Web.Services.Impl;
 
@@ -44,7 +46,7 @@ public class CourseService : ICourseService
 
     public async Task<ResultViewModel<CourseViewModel>> GetCourseByIdAsync(int id)
     {
-        var course = await _unitOfWork.Courses.GetByIdAsync(id);
+        var course = await _unitOfWork.Courses.GetByIdWithSectionsAndLessonsAsync(id);
         if (course == null)
             return ResultViewModel<CourseViewModel>.Failure("Không tìm thấy khóa học");
 
@@ -60,7 +62,24 @@ public class CourseService : ICourseService
             IsActive = course.IsActive,
             IsDeleted = course.IsDeleted,
             CreatedByUserId = course.CreatedByUserId,
-            UpdatedByUserId = course.UpdatedByUserId
+            UpdatedByUserId = course.UpdatedByUserId,
+            Sections = course.Sections?.Select(s => new SectionViewModel
+            {
+                SectionId = s.SectionId,
+                SectionName = s.SectionName,
+                Description = s.Description,
+                Order = s.Order,
+                Lessons = s.Lessons?.Select(l => new LessonViewModel
+                {
+                    LessonId = l.LessonId,
+                    LessonName = l.LessonName,
+                    Description = l.Description,
+                    Content = l.Content,
+                    VideoUrl = l.VideoUrl,
+                    DocumentUrl = l.DocumentUrl,
+                    Order = l.Order
+                }).ToList() ?? new List<LessonViewModel>()
+            }).ToList() ?? new List<SectionViewModel>()
         };
 
         return ResultViewModel<CourseViewModel>.Success(model, "Lấy chi tiết khóa học thành công");
@@ -68,6 +87,25 @@ public class CourseService : ICourseService
 
     public async Task<ResultViewModel<CourseViewModel>> AddCourseAsync(CourseViewModel model)
     {
+        if (model.CategoryId.HasValue)
+        {
+            var category = await _unitOfWork.Categories.GetByIdAsync(model.CategoryId.Value);
+            if (category == null)
+                return ResultViewModel<CourseViewModel>.Failure("Danh mục không tồn tại.");
+        }
+
+        // Kiểm tra LessonName
+        if (model.Sections != null)
+        {
+            foreach (var section in model.Sections)
+            {
+                if (section.Lessons != null && section.Lessons.Any(l => string.IsNullOrEmpty(l.LessonName)))
+                {
+                    return ResultViewModel<CourseViewModel>.Failure("Tất cả bài học phải có tên.");
+                }
+            }
+        }
+
         var course = new Course
         {
             CourseName = model.CourseName,
@@ -77,7 +115,22 @@ public class CourseService : ICourseService
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             IsActive = true,
-            IsDeleted = false
+            IsDeleted = false,
+            Sections = model.Sections?.Select(s => new Section
+            {
+                SectionName = s.SectionName,
+                Description = s.Description,
+                Order = s.Order,
+                Lessons = s.Lessons?.Select(l => new Lesson
+                {
+                    LessonName = l.LessonName,
+                    Description = l.Description,
+                    Content = l.Content,
+                    VideoUrl = l.VideoUrl,
+                    DocumentUrl = l.DocumentUrl,
+                    Order = l.Order
+                }).ToList() ?? new List<Lesson>()
+            }).ToList() ?? new List<Section>()
         };
 
         await _unitOfWork.Courses.AddAsync(course);
@@ -91,9 +144,16 @@ public class CourseService : ICourseService
 
     public async Task<ResultViewModel<CourseViewModel>> UpdateCourseAsync(CourseViewModel model)
     {
-        var existing = await _unitOfWork.Courses.GetByIdAsync(model.CourseId);
+        var existing = await _unitOfWork.Courses.GetByIdWithSectionsAndLessonsAsync(model.CourseId);
         if (existing == null)
             return ResultViewModel<CourseViewModel>.Failure("Không tìm thấy khóa học");
+
+        if (model.CategoryId.HasValue)
+        {
+            var category = await _unitOfWork.Categories.GetByIdAsync(model.CategoryId.Value);
+            if (category == null)
+                return ResultViewModel<CourseViewModel>.Failure("Danh mục không tồn tại.");
+        }
 
         existing.CourseName = model.CourseName;
         existing.Description = model.Description;
@@ -103,6 +163,25 @@ public class CourseService : ICourseService
         existing.IsActive = model.IsActive;
         existing.IsDeleted = model.IsDeleted;
         existing.UpdatedByUserId = model.UpdatedByUserId;
+
+        _unitOfWork.Sections.RemoveRange(existing.Sections);
+        existing.Sections = model.Sections?.Select(s => new Section
+        {
+            SectionId = s.SectionId,
+            SectionName = s.SectionName,
+            Description = s.Description,
+            Order = s.Order,
+            Lessons = s.Lessons?.Where(l => !string.IsNullOrEmpty(l.LessonName)).Select(l => new Lesson
+            {
+                LessonId = l.LessonId,
+                LessonName = l.LessonName,
+                Description = l.Description,
+                Content = l.Content,
+                VideoUrl = l.VideoUrl,
+                DocumentUrl = l.DocumentUrl,
+                Order = l.Order
+            }).ToList() ?? new List<Lesson>()
+        }).ToList() ?? new List<Section>();
 
         await _unitOfWork.CompleteAsync();
 
