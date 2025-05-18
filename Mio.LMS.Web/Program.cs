@@ -1,5 +1,9 @@
     using Microsoft.EntityFrameworkCore;
     using Mio.LMS.Web.Models;
+    using Mio.LMS.Web.Repositories;
+    using Mio.LMS.Web.Repositories.Impl;
+    using Mio.LMS.Web.UnitOfWorks;
+    using Mio.LMS.Web.UnitOfWorks.Impl;
 
     namespace Mio.LMS.Web;
 
@@ -9,15 +13,13 @@
         {
             var builder = WebApplication.CreateBuilder(args);
             
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
             
-            // var connectionString = @"
-            //     Server=localhost;
-            //     Port=3306;
-            //     Database=mio_lms;
-            //     User=root;
-            //     Password=2210794;
-            // ";
+            if (connectionString == string.Empty)
+            {
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            }
+            
             // Cấu hình môi trường Dev: setx ASPNETCORE_ENVIRONMENT "Development"
             
             // Add services to the container.
@@ -29,6 +31,13 @@
             );
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddTransient<IUserRepository, UserRepository>();
+            builder.Services.AddTransient<ICourseRepository, CourseRepository>();
+            builder.Services.AddTransient<ISectionRepository, SectionRepository>();
+            builder.Services.AddTransient<ILessonRepository, LessonRepository>();
+            
+            builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 
