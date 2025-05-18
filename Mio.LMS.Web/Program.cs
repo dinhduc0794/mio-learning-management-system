@@ -2,6 +2,8 @@
     using Mio.LMS.Web.Models;
     using Mio.LMS.Web.Repositories;
     using Mio.LMS.Web.Repositories.Impl;
+    using Mio.LMS.Web.Services;
+    using Mio.LMS.Web.Services.Impl;
     using Mio.LMS.Web.UnitOfWorks;
     using Mio.LMS.Web.UnitOfWorks.Impl;
 
@@ -31,13 +33,14 @@
             );
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            builder.Services.AddTransient<IUserRepository, UserRepository>();
-            builder.Services.AddTransient<ICourseRepository, CourseRepository>();
-            builder.Services.AddTransient<ISectionRepository, SectionRepository>();
-            builder.Services.AddTransient<ILessonRepository, LessonRepository>();
-            
-            builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+            builder.Services.AddScoped<ISectionRepository, SectionRepository>();
+            builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ICourseService, CourseService>();
 
             var app = builder.Build();
 
