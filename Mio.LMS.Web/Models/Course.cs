@@ -17,7 +17,7 @@ public class Course : BaseModel
     public Category? Category { get; set; }
     
     [MaxLength(500)]
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 
     public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public ICollection<Section> Sections { get; set; } = new List<Section>();

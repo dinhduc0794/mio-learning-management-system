@@ -185,7 +185,7 @@
                         success: function (response) {
                             if (response.success) {
                                 toastr.success("Xóa thành công!");
-                                tblCourse.ajax.reload();
+                                tblCourse.ajax.reload(); 
                             } else {
                                 toastr.error("Xóa thất bại: " + response.message);
                             }

@@ -4,7 +4,7 @@ using Mio.LMS.Web.Models;
 
 namespace Mio.LMS.Web.Repositories.Impl;
 
-public class GenericRepository<T> : IGenericRepository<T> where T : class
+public class GenericRepository<T> : IGenericRepository<T> where T : BaseModel
 {
     protected readonly LMSDbContext _context;
 
@@ -25,64 +25,45 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
     {
-        var query = _context.Set<T>().AsQueryable();
-        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
-        {
-            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
-        }
-        return await query.Where(expression).ToListAsync();
+        return await _context.Set<T>()
+            .Where(e => e.IsActive && !e.IsDeleted)
+            .Where(expression)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<T>> GetAllAsync()
     {
-        var query = _context.Set<T>().AsQueryable();
-        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
-        {
-            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
-        }
-        return await query.ToListAsync();
+        return await _context.Set<T>()
+            .Where(e => e.IsActive && !e.IsDeleted)
+            .ToListAsync();
     }
 
     public async Task<T?> GetByIdAsync(int id)
     {
-        var query = _context.Set<T>().AsQueryable();
-        if (typeof(BaseModel).IsAssignableFrom(typeof(T)))
+        var entity = await _context.Set<T>().FindAsync(id);
+        if (entity == null || !entity.IsActive || entity.IsDeleted)
         {
-            query = query.Where(e => EF.Property<bool>(e, "IsActive") == true && EF.Property<bool>(e, "IsDeleted") == false);
+            return null;
         }
-        return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        return entity;
     }
 
     public void Remove(T entity)
     {
-        if (entity is BaseModel baseModel)
-        {
-            baseModel.IsDeleted = true;
-            baseModel.IsActive = false;
-            baseModel.UpdatedAt = DateTime.Now;
-            _context.Set<T>().Update(entity);
-        }
-        else
-        {
-            _context.Set<T>().Remove(entity);
-        }
+        entity.IsDeleted = true;
+        entity.IsActive = false;
+        entity.UpdatedAt = DateTime.Now;
+        _context.Entry(entity).State = EntityState.Modified;
     }
 
     public void RemoveRange(IEnumerable<T> entities)
     {
         foreach (var entity in entities)
         {
-            if (entity is BaseModel baseModel)
-            {
-                baseModel.IsDeleted = true;
-                baseModel.IsActive = false;
-                baseModel.UpdatedAt = DateTime.Now;
-                _context.Set<T>().Update(entity);
-            }
-            else
-            {
-                _context.Set<T>().Remove(entity);
-            }
+            entity.IsDeleted = true;
+            entity.IsActive = false;
+            entity.UpdatedAt = DateTime.Now;
+            _context.Entry(entity).State = EntityState.Modified;
         }
     }
 }

@@ -11,7 +11,7 @@ public class CourseRepository : GenericRepository<Course>, ICourseRepository
     {
         return await _context.Courses
             .Include(c => c.Category)
-            .Where(c => !c.IsDeleted)
+            .Where(c => c.IsActive && !c.IsDeleted)
             .ToListAsync();
     }
     
