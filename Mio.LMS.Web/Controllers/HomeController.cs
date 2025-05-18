@@ -1,20 +1,37 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Mio.LMS.Web.Models;
+using Mio.LMS.Web.Services;
 
 namespace Mio.LMS.Web.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ICategoryService _categoryService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ICategoryService categoryService)
     {
         _logger = logger;
+        _categoryService = categoryService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
+        var result = await _categoryService.GetAllCategoriesAsync();
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            ViewBag.AllCategories = result.Data
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToList();
+        }
+
         return View();
     }
 

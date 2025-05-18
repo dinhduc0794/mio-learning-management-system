@@ -4,5 +4,5 @@ namespace Mio.LMS.Web.Repositories;
 
 public interface ICourseRepository : IGenericRepository<Course>
 {
-    
+    Task<List<Course>> GetAllWithCategoryAsync();
 }

@@ -19,21 +19,30 @@ public class CourseController : Controller
 
     public async Task<IActionResult> Index(int? categoryId)
     {
-        var result = await _courseService.GetAllCoursesAsync();
+        // Gọi service với categoryId để lọc ngay từ tầng dữ liệu
+        var result = await _courseService.GetAllCoursesAsync(categoryId);
         if (!result.IsSuccess)
         {
             ViewBag.ErrorMessage = result.Message;
             return View(new List<CourseViewModel>());
         }
 
-        var courses = result.Data;
-        if (categoryId.HasValue)
-            courses = courses.Where(c => c.CategoryId == categoryId).ToList();
-
         ViewBag.AllCategories = await GetCategorySelectList();
         ViewBag.SelectedCategoryId = categoryId;
 
-        return View(courses);
+        return View(result.Data ?? new List<CourseViewModel>());
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllCourses(int? categoryId)
+    {
+        var result = await _courseService.GetAllCoursesAsync(categoryId);
+        if (!result.IsSuccess)
+        {
+            return Json(new { success = false, message = result.Message });
+        }
+
+        return Json(new { success = true, message = result.Message, data = result.Data ?? new List<CourseViewModel>() });
     }
 
     [HttpGet]

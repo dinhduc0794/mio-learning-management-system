@@ -13,16 +13,23 @@ public class CourseService : ICourseService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ResultViewModel<List<CourseViewModel>>> GetAllCoursesAsync()
+    public async Task<ResultViewModel<List<CourseViewModel>>> GetAllCoursesAsync(int? categoryId = null)
     {
-        var courses = await _unitOfWork.Courses.GetAllAsync();
-        var result = courses.Select(c => new CourseViewModel
+        var courses = await _unitOfWork.Courses.GetAllWithCategoryAsync();
+        var query = courses.AsQueryable();
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(c => c.CategoryId == categoryId.Value);
+        }
+
+        var result = query.Select(c => new CourseViewModel
         {
             CourseId = c.CourseId,
             CourseName = c.CourseName,
             Description = c.Description,
             CategoryId = c.CategoryId,
-            Category = c.Category,
+            CategoryName = c.Category != null ? c.Category.Name : "N/A",
             ImageUrl = c.ImageUrl,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
