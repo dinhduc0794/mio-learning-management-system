@@ -5,29 +5,22 @@ namespace Mio.LMS.Web.Models;
 
 public abstract class BaseModel
 {
-    
     public BaseModel()
     {
-        this.UpdatedAt = DateTime.Now;
-        this.CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.Now;
+        UpdatedAt = DateTime.Now;
+        IsActive = true;
+        IsDeleted = false;
     }
-    
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-
     public int? CreatedByUserId { get; set; }
-
-    [ForeignKey("CreatedByUserId")]
-    public User? CreatedByUser { get; set; }
-
+    [NotMapped]
+    public User CreatedByUser { get; set; } // Không ánh xạ vào database
     public int? UpdatedByUserId { get; set; }
-    
-    [ForeignKey("UpdatedByUserId")]
-    public User? UpdatedByUser { get; set; }
-
-    [DefaultValue(true)]
-    public bool IsActive { get; set; } = true;
-
-    [DefaultValue(false)]
-    public bool IsDeleted { get; set; } = false;
+    [NotMapped]
+    public User UpdatedByUser { get; set; } // Không ánh xạ vào database
+    public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
 }

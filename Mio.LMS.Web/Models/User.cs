@@ -7,28 +7,26 @@ public class User : BaseModel
 {
     [Key]
     public int UserId { get; set; }
-
-    public int RoleId { get; set; }
-    [ForeignKey("RoleId")] public Role Role { get; set; }
-    
     [Required, MaxLength(50)]
     public string UserName { get; set; }
-    
-    [Required]
+    [Required, MaxLength(100)]
     public string Password { get; set; }
-
-    [MaxLength(15)]
-    public string? PhoneNumber { get; set; }    
-    
-    [EmailAddress]
+    [Required, EmailAddress, MaxLength(100)]
     public string Email { get; set; }
-    
     [Required, MaxLength(100)]
     public string FullName { get; set; }
-
+    [MaxLength(15)]
+    public string PhoneNumber { get; set; }
     public DateTime? Dob { get; set; }
-    
-    public string? Address { get; set; }
-
-    public string? Image { get; set; }
+    [MaxLength(200)]
+    public string Address { get; set; }
+    [MaxLength(500)]
+    public string Image { get; set; }
+    public int RoleId { get; set; }
+    [ForeignKey("RoleId")]
+    public Role Role { get; set; }
+    public ICollection<Enrollment> Enrollments { get; set; }
+    public ICollection<Feedback> Feedbacks { get; set; }
+    public ICollection<Submission> Submissions { get; set; }
+    public ICollection<UserAnswer> UserAnswers { get; set; }
 }

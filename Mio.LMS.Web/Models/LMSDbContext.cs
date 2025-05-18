@@ -7,6 +7,18 @@ public class LMSDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<Section> Sections { get; set; }
+    public DbSet<Lesson> Lessons { get; set; }
+    public DbSet<Quiz> Quizzes { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<Answer> Answers { get; set; }
+    public DbSet<UserAnswer> UserAnswers { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
+    public DbSet<Feedback> Feedbacks { get; set; }
+    public DbSet<Assignment> Assignments { get; set; }
+    public DbSet<Submission> Submissions { get; set; }
+    public DbSet<Result> Results { get; set; }
     
     // use to get thong tin user dang truy cap from httpcontext -> dung de lay userId create, update
     private readonly IHttpContextAccessor _httpContextAccessor;

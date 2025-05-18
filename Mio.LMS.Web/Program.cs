@@ -8,8 +8,16 @@
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             
+            // var connectionString = @"
+            //     Server=localhost;
+            //     Port=3306;
+            //     Database=mio_lms;
+            //     User=root;
+            //     Password=2210794;
+            // ";
             // Cấu hình môi trường Dev: setx ASPNETCORE_ENVIRONMENT "Development"
             
             // Add services to the container.
