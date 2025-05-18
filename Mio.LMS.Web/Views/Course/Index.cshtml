@@ -1,0 +1,86 @@
+@model IEnumerable<Mio.LMS.Web.Models.ViewModels.CourseViewModel>
+@{
+    ViewData["Title"] = "Danh sách khóa học";
+}
+
+<div class="main-content">
+    <div class="main-content-inner">
+        <div class="breadcrumbs" id="breadcrumbs">
+            <ul class="breadcrumb">
+                <li>
+                    <i class="ace-icon fa fa-home home-icon"></i>
+                    <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+                </li>
+                <li class="active">Danh sách khóa học</li>
+            </ul>
+        </div>
+
+        <div class="page-content">
+            <div class="page-header">
+                <h1 style="font-weight: bold;">Danh sách khóa học</h1>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="add-course-container text-end" style="margin-bottom: 20px;">
+                        <a asp-action="Create">
+                            <button class="btn btn-primary" title="Thêm khóa học">
+                                <i class="ace-icon fa fa-plus bigger-130"></i> Thêm khóa học
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th class="text-center">Tên khóa học</th>
+                        <th class="text-center">Mô tả</th>
+                        <th class="text-center">Danh mục</th>
+                        <th class="text-center">Ngày tạo</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var course in Model)
+                    {
+                        <tr>
+                            <td class="text-center">@course.CourseName</td>
+                            <td class="text-center">@course.Description</td>
+                            <td class="text-center">@course.Category?.Name</td>
+                            <td class="text-center">@course.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td class="text-center">
+                                <a asp-action="Edit" asp-route-id="@course.CourseId" title="Sửa">
+                                    <i class="fas fa-edit text-primary"></i>
+                                </a>
+                                <a href="#" onclick="deleteCourse(@course.CourseId)" title="Xóa">
+                                    <i class="fas fa-trash text-danger"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteCourse(id) {
+            if (confirm("Bạn có chắc muốn xóa khóa học này?")) {
+                $.post('@Url.Action("Delete", "Course")', { id: id }, function (response) {
+                    if (response.success) {
+                        alert("Xóa thành công!");
+                        location.reload();
+                    } else {
+                        alert("Xóa thất bại!");
+                    }
+                });
+            }
+        }
+    </script>
+}

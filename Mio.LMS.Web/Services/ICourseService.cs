@@ -1,11 +1,13 @@
 using Mio.LMS.Web.Models;
+using Mio.LMS.Web.Models.ViewModels;
 
 namespace Mio.LMS.Web.Services;
 
 public interface ICourseService
 {
-    Task<IEnumerable<Course>> GetAllCoursesAsync();
-    Task<Course?> GetCourseByIdAsync(int id);
-    Task AddCourseAsync(Course course);
-    Task<bool> DeleteCourseAsync(int id);
+    Task<ResultViewModel<List<CourseViewModel>>> GetAllCoursesAsync();
+    Task<ResultViewModel<CourseViewModel>> GetCourseByIdAsync(int id);
+    Task<ResultViewModel<CourseViewModel>> AddCourseAsync(CourseViewModel courseViewModel);
+    Task<ResultViewModel<CourseViewModel>> UpdateCourseAsync(CourseViewModel courseViewModel);
+    Task<ResultViewModel<bool>> DeleteCourseAsync(int id);
 }

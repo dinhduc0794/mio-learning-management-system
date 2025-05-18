@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Mio.LMS.Web.Models;
 
@@ -17,10 +18,12 @@ public abstract class BaseModel
     public DateTime UpdatedAt { get; set; }
     public int? CreatedByUserId { get; set; }
     [NotMapped]
-    public User CreatedByUser { get; set; } // Không ánh xạ vào database
+    [ValidateNever]
+    public User? CreatedByUser { get; set; } // Không ánh xạ vào database
     public int? UpdatedByUserId { get; set; }
     [NotMapped]
-    public User UpdatedByUser { get; set; } // Không ánh xạ vào database
+    [ValidateNever]
+    public User? UpdatedByUser { get; set; } // Không ánh xạ vào database
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
 }

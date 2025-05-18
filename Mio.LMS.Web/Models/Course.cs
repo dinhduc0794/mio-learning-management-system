@@ -18,11 +18,9 @@ public class Course : BaseModel
     
     [MaxLength(500)]
     public string ImageUrl { get; set; }
-    public int Status { get; set; } // 0: Draft, 1: Published, 2: Archived
 
-    public ICollection<Enrollment> Enrollments { get; set; }
-    public ICollection<Section> Sections { get; set; }
-    public ICollection<Feedback> Feedbacks { get; set; }
-    public ICollection<Assignment> Assignments { get; set; }
-    
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public ICollection<Section> Sections { get; set; } = new List<Section>();
+    public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+    public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 }
