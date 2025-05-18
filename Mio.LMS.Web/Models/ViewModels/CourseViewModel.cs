@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Mio.LMS.Web.Models.ViewModels;
@@ -20,6 +21,9 @@ public class CourseViewModel : BaseModel
 
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
+    
+    [NotMapped]
+    public IFormFile? ImageFile { get; set; }
 
     public int RecordCount { get; set; }
     public bool IsEdit { get; set; }

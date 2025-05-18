@@ -94,7 +94,6 @@ public class CourseService : ICourseService
                 return ResultViewModel<CourseViewModel>.Failure("Danh mục không tồn tại.");
         }
 
-        // Kiểm tra LessonName
         if (model.Sections != null)
         {
             foreach (var section in model.Sections)
@@ -111,7 +110,7 @@ public class CourseService : ICourseService
             CourseName = model.CourseName,
             Description = model.Description,
             CategoryId = model.CategoryId,
-            ImageUrl = model.ImageUrl,
+            ImageUrl = model.ImageUrl, // Stores the file path
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             IsActive = true,
@@ -126,8 +125,8 @@ public class CourseService : ICourseService
                     LessonName = l.LessonName,
                     Description = l.Description,
                     Content = l.Content,
-                    VideoUrl = l.VideoUrl,
-                    DocumentUrl = l.DocumentUrl,
+                    VideoUrl = l.VideoUrl, // Stores the file path
+                    DocumentUrl = l.DocumentUrl, // Stores the file path
                     Order = l.Order
                 }).ToList() ?? new List<Lesson>()
             }).ToList() ?? new List<Section>()
@@ -158,7 +157,7 @@ public class CourseService : ICourseService
         existing.CourseName = model.CourseName;
         existing.Description = model.Description;
         existing.CategoryId = model.CategoryId;
-        existing.ImageUrl = model.ImageUrl;
+        existing.ImageUrl = model.ImageUrl; // Updated file path
         existing.UpdatedAt = DateTime.Now;
         existing.IsActive = model.IsActive;
         existing.IsDeleted = model.IsDeleted;
@@ -177,8 +176,8 @@ public class CourseService : ICourseService
                 LessonName = l.LessonName,
                 Description = l.Description,
                 Content = l.Content,
-                VideoUrl = l.VideoUrl,
-                DocumentUrl = l.DocumentUrl,
+                VideoUrl = l.VideoUrl, // Updated file path
+                DocumentUrl = l.DocumentUrl, // Updated file path
                 Order = l.Order
             }).ToList() ?? new List<Lesson>()
         }).ToList() ?? new List<Section>();

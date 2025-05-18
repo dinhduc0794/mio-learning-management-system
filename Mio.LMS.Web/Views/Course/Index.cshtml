@@ -159,7 +159,7 @@
                             return `
                                 <a href="/Course/Edit/${data}" title="Sửa khóa học">
                                     <i class="fas fa-pen-square text-primary" style="font-size:1.4em;"></i>
-                                </a>
+                                   </a>
                                 <a href="#" onclick="deleteCourse(${data})" title="Xóa khóa học">
                                     <i class="fas fa-trash-alt text-danger mx-2" style="font-size:1.4em;"></i>
                                 </a>`;
@@ -179,9 +179,6 @@
                         url: '@Url.Action("Delete", "Course")',
                         type: "POST",
                         data: { id: id },
-                        headers: {
-                            "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                        },
                         success: function (response) {
                             if (response.success) {
                                 toastr.success("Xóa thành công!");
@@ -196,6 +193,7 @@
                     });
                 }
             };
+            
         });
     </script>
 }

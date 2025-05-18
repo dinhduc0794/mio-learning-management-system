@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mio.LMS.Web.Models.ViewModels;
 
@@ -21,6 +22,12 @@ public class LessonViewModel : BaseModel
 
     [MaxLength(500)]
     public string? DocumentUrl { get; set; }
+    
+    [NotMapped]
+    public IFormFile? VideoFile { get; set; }
+
+    [NotMapped]
+    public IFormFile? DocumentFile { get; set; }
 
     public int Order { get; set; }
 }

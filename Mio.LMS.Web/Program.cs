@@ -31,6 +31,12 @@
                     ServerVersion.AutoDetect(connectionString)
                 )
             );
+            
+            builder.Services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = 104857600; // 100 MB
+            });
+            
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

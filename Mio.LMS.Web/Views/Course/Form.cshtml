@@ -1,6 +1,7 @@
 @model Mio.LMS.Web.Models.ViewModels.CourseViewModel
 
 @using System.Text.Json
+@using Mio.LMS.Web.Models.ViewModels
 
 @{
     var isEdit = Model.CourseId != 0;
@@ -30,7 +31,7 @@
 
             <div class="row">
                 <div class="col-xs-12">
-                    <form asp-action="@action" method="post" id="course-form">
+                    <form asp-action="@action" method="post" id="course-form" enctype="multipart/form-data">
                         @if (!ViewData.ModelState.IsValid)
                         {
                             <div class="alert alert-danger">
@@ -71,16 +72,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="ImageUrl" class="control-label">Ảnh</label>
-                            <input asp-for="ImageUrl" class="form-control" />
+                            <label class="control-label">Ảnh khóa học</label>
+                            <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl" alt="Course Image" style="max-width: 200px; margin-top: 10px;" />
+                            }
                         </div>
 
                         <div class="form-group">
                             <label>Phần học (Sections)</label>
-                            <div id="sections-container">
-                                <!-- Phần sections sẽ được render tại đây -->
-                            </div>
-                            <button type="button" class="btn btn-primary"style="margin-left: 32px" id="add-section">+ Thêm phần</button>
+                            <div id="sections-container"></div>
+                            <button type="button" class="btn btn-primary" style="margin-left: 32px" id="add-section">+ Thêm phần</button>
                         </div>
 
                         <div class="form-group mt-4">
@@ -101,7 +104,7 @@
     <script>
         $(function () {
             let sectionIndex = @Model.Sections?.Count ?? 0;
-            const initialSections = @Html.Raw(JsonSerializer.Serialize(Model.Sections));
+            const initialSections = @Html.Raw(JsonSerializer.Serialize(Model.Sections ?? new List<SectionViewModel>()));
 
             function createLessonForm(sectionIdx, lessonIdx, lesson = {}) {
                 return `
@@ -121,12 +124,14 @@
                             <textarea name="Sections[${sectionIdx}].Lessons[${lessonIdx}].Content" class="form-control">${lesson.Content || ''}</textarea>
                         </div>
                         <div class="form-group">
-                            <label>Video URL</label>
-                            <input name="Sections[${sectionIdx}].Lessons[${lessonIdx}].VideoUrl" class="form-control" value="${lesson.VideoUrl || ''}" />
+                            <label>Video</label>
+                            <input type="file" name="Sections[${sectionIdx}].Lessons[${lessonIdx}].VideoFile" class="form-control" accept="video/*" />
+                            ${lesson.VideoUrl ? `<video src="${lesson.VideoUrl}" controls style="max-width: 200px; margin-top: 10px;"></video>` : ''}
                         </div>
                         <div class="form-group">
-                            <label>Tài liệu URL</label>
-                            <input name="Sections[${sectionIdx}].Lessons[${lessonIdx}].DocumentUrl" class="form-control" value="${lesson.DocumentUrl || ''}" />
+                            <label>Tài liệu</label>
+                            <input type="file" name="Sections[${sectionIdx}].Lessons[${lessonIdx}].DocumentFile" class="form-control" accept=".pdf,.doc,.docx" />
+                            ${lesson.DocumentUrl ? `<a href="${lesson.DocumentUrl}" target="_blank">Xem tài liệu</a>` : ''}
                         </div>
                     </div>`;
             }
@@ -187,25 +192,50 @@
                 $(this).closest(".lesson-item").remove();
             });
 
-            // Handle AJAX form submission
+            // Preview files before upload
+            $(document).on('change', 'input[type="file"]', function (e) {
+                const input = e.target;
+                const previewContainer = $(input).next();
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        if (input.accept.includes('image')) {
+                            const img = $('<img>').attr('src', event.target.result).css({ 'max-width': '200px', 'margin-top': '10px' });
+                            previewContainer.replaceWith(img);
+                        } else if (input.accept.includes('video')) {
+                            const video = $('<video>').attr('src', event.target.result).attr('controls', true).css({ 'max-width': '200px', 'margin-top': '10px' });
+                            previewContainer.replaceWith(video);
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
+
+            // Handle AJAX form submission with file uploads
             $('#course-form').on('submit', function (e) {
                 e.preventDefault();
                 const form = $(this);
                 const actionUrl = form.attr('action');
-                const formData = form.serialize();
+                const formData = new FormData(form[0]);
 
-                $.post(actionUrl, formData)
-                    .done(function (response) {
+                $.ajax({
+                    url: actionUrl,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
                         if (response.success) {
                             alert(response.message);
                             window.location.href = '/Course';
                         } else {
-                            alert(response.message || 'Có lỗi xảy ra.');
+                            alert('Lỗi: ' + (response.message || 'Có lỗi xảy ra.') + '\nChi tiết: ' + JSON.stringify(response.errors || {}));
                         }
-                    })
-                    .fail(function () {
-                        alert('Lỗi kết nối đến máy chủ.');
-                    });
+                    },
+                    error: function (xhr) {
+                        alert('Lỗi kết nối đến máy chủ: ' + (xhr.responseJSON?.message || 'Lỗi không xác định'));
+                    }
+                });
             });
         });
     </script>
