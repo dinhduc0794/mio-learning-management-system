@@ -19,4 +19,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.14" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Course\" />
+  </ItemGroup>
 </Project>
