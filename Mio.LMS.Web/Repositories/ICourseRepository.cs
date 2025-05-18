@@ -1,6 +1,8 @@
+using Mio.LMS.Web.Models;
+
 namespace Mio.LMS.Web.Repositories;
 
-public interface ICourseRepository
+public interface ICourseRepository : IGenericRepository<Course>
 {
     
 }
