@@ -11,93 +11,106 @@
 
 <div class="main-content">
     <div class="main-content-inner">
-        <div class="breadcrumbs" id="breadcrumbs">
-            <ul class="breadcrumb">
-                <li>
-                    <i class="ace-icon fa fa-home home-icon"></i>
-                    <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index"><i class="ace-icon fa fa-home home-icon"></i> Trang chủ</a>
                 </li>
-                <li>
+                <li class="breadcrumb-item">
                     <a asp-action="Index">Danh sách khóa học</a>
                 </li>
-                <li class="active">@ViewData["Title"]</li>
-            </ul>
-        </div>
+                <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+            </ol>
+        </nav>
 
-        <div class="page-content">
-            <div class="page-header">
-                <h1 style="font-weight: bold;">@ViewData["Title"]</h1>
+        <div class="card shadow-sm p-4">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">@ViewData["Title"]</h2>
             </div>
 
-            <div class="row">
-                <div class="col-xs-12">
-                    <form asp-action="@action" method="post" id="course-form" enctype="multipart/form-data">
-                        @if (!ViewData.ModelState.IsValid)
-                        {
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach (var item in ViewData.ModelState)
-                                    {
-                                        foreach (var error in item.Value.Errors)
-                                        {
-                                            <li><strong>@item.Key:</strong> @error.ErrorMessage</li>
-                                        }
-                                    }
-                                </ul>
-                            </div>
-                        }
-
-                        @if (isEdit)
-                        {
-                            <input type="hidden" asp-for="CourseId" />
-                        }
-
-                        <div class="form-group">
-                            <label asp-for="CourseName" class="control-label">Tên khóa học</label>
-                            <input asp-for="CourseName" class="form-control" required />
-                            <span asp-validation-for="CourseName" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group">
-                            <label asp-for="Description" class="control-label">Mô tả</label>
-                            <textarea asp-for="Description" class="form-control"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label asp-for="CategoryId" class="control-label">Danh mục</label>
-                            <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.AllCategories">
-                                <option value="">-- Chọn danh mục --</option>
-                            </select>
-                            <span asp-validation-for="CategoryId" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label">Ảnh khóa học</label>
-                            <input type="file" name="ImageFile" class="form-control" accept="image/*" />
-                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                            {
-                                <img src="@Model.ImageUrl" alt="Course Image" style="max-width: 200px; margin-top: 10px;" />
-                            }
-                        </div>
-
-                        <div class="form-group">
-                            <label>Phần học (Sections)</label>
-                            <div id="sections-container"></div>
-                            <button type="button" class="btn btn-primary" style="margin-left: 32px" id="add-section">+ Thêm phần</button>
-                        </div>
-
-                        <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary" style="margin-right: 12px">
-                                @(isEdit ? "Lưu thay đổi" : "Thêm khóa học")
-                            </button>
-                            <a asp-action="Index" class="btn btn-warning">Quay lại</a>
-                        </div>
-                    </form>
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="text-center image-container mb-4">
+                    <img src="@Model.ImageUrl" alt="Course Image" />
                 </div>
-            </div>
+            }
+
+            <form asp-action="@action" method="post" id="course-form" enctype="multipart/form-data">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach (var item in ViewData.ModelState)
+                            {
+                                foreach (var error in item.Value.Errors)
+                                {
+                                    <li><strong>@item.Key:</strong> @error.ErrorMessage</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @if (isEdit)
+                {
+                    <input type="hidden" asp-for="CourseId" />
+                }
+
+                <div class="form-group row">
+                    <label asp-for="CourseName" class="col-sm-3 col-form-label">Tên khóa học</label>
+                    <div class="col-sm-9">
+                        <input asp-for="CourseName" class="form-control" required />
+                        <span asp-validation-for="CourseName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label asp-for="Description" class="col-sm-3 col-form-label">Mô tả</label>
+                    <div class="col-sm-9">
+                        <textarea asp-for="Description" class="form-control"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label asp-for="CategoryId" class="col-sm-3 col-form-label">Danh mục</label>
+                    <div class="col-sm-9">
+                        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.AllCategories">
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label">Ảnh khóa học</label>
+                    <div class="col-sm-9">
+                        <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                        <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="form-group">
+                    <label class="form-label fw-bold">Học phần</label>
+                    <div id="sections-container" class="mb-3"></div>
+                    <button type="button" class="btn btn-success btn-add-task" id="add-section">
+                        <i class="fa fa-plus"></i> Thêm phần
+                    </button>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary me-2">
+                        @(isEdit ? "Lưu thay đổi" : "Thêm khóa học")
+                    </button>
+                    <a asp-action="Index" class="btn btn-warning">Quay lại</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -95,6 +95,10 @@ public class CategoryService : ICategoryService
         if (category == null)
             return ResultViewModel<bool>.Failure("Không tìm thấy danh mục để xóa");
 
+        var courses = await _unitOfWork.Courses.FindAsync(c => c.CategoryId == id && c.IsActive && !c.IsDeleted);
+        if (courses.Any())
+            return ResultViewModel<bool>.Failure("Không thể xóa danh mục vì đang có khóa học liên quan");
+
         _unitOfWork.Categories.Remove(category);
         await _unitOfWork.CompleteAsync();
 
